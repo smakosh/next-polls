@@ -47,7 +47,7 @@ export const polls = pgTable("polls", {
 export const pollOptions = pgTable("poll_options", {
   id: serial("id").primaryKey(),
   pollId: integer("poll_id")
-    .references(() => polls.id)
+    .references(() => polls.id, { onDelete: "cascade" })
     .notNull(),
   optionText: text("option_text").notNull(),
 });
@@ -58,10 +58,10 @@ export const votes = pgTable(
   {
     id: serial("id").primaryKey(),
     pollId: integer("poll_id")
-      .references(() => polls.id)
+      .references(() => polls.id, { onDelete: "cascade" })
       .notNull(),
     optionId: integer("option_id")
-      .references(() => pollOptions.id)
+      .references(() => pollOptions.id, { onDelete: "cascade" })
       .notNull(),
     userId: integer("user_id").references(() => users.id), // Nullable for unauthenticated users
     ipAddress: text("ip_address"), // Nullable for authenticated users

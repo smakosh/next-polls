@@ -10,6 +10,7 @@ import {
 import { createSession, deleteSession } from "@/app/(auth)/_lib/sessions";
 import bcrypt from "bcrypt";
 import { eq } from "drizzle-orm";
+import { redirect } from "next/navigation";
 
 export async function signup(
   state: FormState,
@@ -113,5 +114,6 @@ export async function login(
 }
 
 export async function logout() {
-  deleteSession();
+  await deleteSession();
+  redirect("/login");
 }

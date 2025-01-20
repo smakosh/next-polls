@@ -1,28 +1,20 @@
 import Link from "next/link";
-import { eq, sql } from "drizzle-orm";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { db } from "@/../drizzle/db";
-import { polls, votes } from "@/../drizzle/schema";
+import { getPolls } from "../_lib/get-polls";
 
 export default async function PollList() {
-  const pollData = await db
-    .select({
-      id: polls.id,
-      question: polls.question,
-      voteCount: sql`COUNT(${votes.id})`.as("vote_count"),
-    })
-    .from(polls)
-    .leftJoin(votes, eq(votes.pollId, polls.id)) // Use the `eq` helper function
-    .groupBy(polls.id);
+  const polls = await getPolls();
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {pollData.map((poll) => (
+      {polls.map((poll) => (
         <Link href={`/poll/${poll.id}`} key={poll.id}>
           <Card className="transition-shadow hover:shadow-lg">
             <CardHeader>
-              <CardTitle>{poll.question}</CardTitle>
+              <CardTitle className="max-w-72 truncate">
+                {poll.question}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-500">

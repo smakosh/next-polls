@@ -1,6 +1,12 @@
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Suspense } from "react";
+
+import { Button } from "@/components/ui/button";
 import PollList from "./_components/poll-list";
+import { FallbackPolls } from "./_components/fallback-polls";
+
+export const experimental_ppr = true;
+export const dynamic = "force-dynamic";
 
 export default function Page() {
   return (
@@ -11,7 +17,9 @@ export default function Page() {
           <Button>Create New Poll</Button>
         </Link>
       </div>
-      <PollList />
+      <Suspense fallback={<FallbackPolls />}>
+        <PollList />
+      </Suspense>
     </div>
   );
 }

@@ -1,19 +1,21 @@
 import { notFound } from "next/navigation";
 import { eq, sql } from "drizzle-orm";
+import { unstable_noStore as noStore } from "next/cache";
 
+import { getIp } from "@/lib/getIp";
 import { db } from "@/../drizzle/db";
 import { polls, pollOptions, votes } from "@/../drizzle/schema";
-import { VoteForm } from "./_components/vote-form";
 import { getUser } from "@/app/(auth)/_lib/dal";
-import { unstable_noStore } from "next/cache";
-import { getIp } from "@/lib/getIp";
+import { VoteForm } from "./_components/vote-form";
+
+export const dynamic = "force-dynamic";
 
 export default async function PollPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  unstable_noStore();
+  noStore();
   const pageParams = await params;
   const user = await getUser();
   const userId = user?.id;
