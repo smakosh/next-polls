@@ -10,7 +10,7 @@ export const getUser = cache(async () => {
   if (!session || !session.userId) return null;
 
   try {
-    const data = await db.query.users.findMany({
+    const data = await db.query.users.findFirst({
       where: eq(users.id, session.userId),
 
       // Explicitly return the columns you need rather than the whole user object
@@ -21,7 +21,7 @@ export const getUser = cache(async () => {
       },
     });
 
-    const user = data[0];
+    const user = data;
 
     return user;
   } catch (error) {

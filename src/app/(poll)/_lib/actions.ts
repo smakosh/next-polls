@@ -1,6 +1,6 @@
 "use server";
 
-// import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { db } from "@/../drizzle/db";
 import { polls, pollOptions } from "@/../drizzle/schema";
 import { getUser } from "@/app/(auth)/_lib/dal";
@@ -60,15 +60,12 @@ export async function createPoll(
     }));
 
     await db.insert(pollOptions).values(optionInsertions);
-
-    // redirect("/dashboard");
-    return {
-      message: "success",
-    };
   } catch (error) {
     console.error(error);
     return {
       message: "An unexpected error occurred while creating the poll.",
     };
   }
+
+  redirect("/dashboard");
 }

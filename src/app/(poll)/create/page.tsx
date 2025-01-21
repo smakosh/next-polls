@@ -1,16 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useActionState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createPoll } from "@/app/(poll)/_lib/actions";
-import { useRouter } from "next/navigation";
 
 export default function CreatePoll() {
-  const router = useRouter();
   const [state, action, isPending] = useActionState(createPoll, undefined);
   const [options, setOptions] = useState(["", ""]); // Start with two empty options
 
@@ -27,12 +25,6 @@ export default function CreatePoll() {
     updatedOptions[index] = value;
     setOptions(updatedOptions);
   };
-
-  useEffect(() => {
-    if (state?.message === "success") {
-      router.push("/dashboard");
-    }
-  }, [state?.message, router]);
 
   return (
     <form action={action}>
