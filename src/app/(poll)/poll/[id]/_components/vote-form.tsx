@@ -1,15 +1,12 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { CopyToClipboard } from "react-copy-to-clipboard";
-
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Copy } from "lucide-react";
 import { submitVote } from "@/app/(poll)/poll/[id]/_lib/actions";
 import { FormState } from "../_lib/definitions";
 import { getURL } from "@/lib/getUrl";
+import CopyToClipboard from "react-copy-to-clipboard";
 
 interface PollOption {
   id: number;
@@ -34,86 +31,112 @@ export function VoteForm({
     FormData
   >(submitVote, undefined);
 
-  const handleCopied = () => {
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const totalVotes = poll.options.reduce(
+    (sum, option) => sum + option.votes,
+    0
+  );
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(
+        `${window.location.origin}/poll/${poll.id}`
+      );
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
+  const getPercentage = (votes: number) => {
+    if (totalVotes === 0) return 0;
+    return ((votes / totalVotes) * 100).toFixed(1);
   };
 
   return (
-    <>
-      <div className="relative mx-auto mb-4 max-w-2xl text-right">
+    <div className="mx-auto w-full max-w-xl">
+      <div className="relative mb-4 text-right">
         {isCopied && (
-          <div className="absolute -right-2 top-10 rounded-md bg-neutral-700 px-2 py-1 text-xs text-white">
+          <div className="absolute -right-2 top-10 rounded-md bg-neutral-900 px-2 py-1 text-xs text-white">
             URL has been copied to clipboard
           </div>
         )}
         <CopyToClipboard
           text={`${getURL()}/poll/${poll.id}`}
-          onCopy={handleCopied}
+          onCopy={handleCopy}
         >
-          <Button type="button">Copy URL</Button>
+          <Button
+            variant="outline"
+            className="rounded-full border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50"
+            type="button"
+          >
+            <Copy className="mr-2 size-4" />
+            Copy URL
+          </Button>
         </CopyToClipboard>
       </div>
-      <Card className="mx-auto max-w-2xl">
-        <form action={action}>
-          <CardHeader>
-            <CardTitle>{poll.question}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <input type="hidden" name="pollId" value={poll.id} />
-            <RadioGroup
-              name="selectedOption"
-              className="space-y-3"
-              defaultValue={poll.userVote?.toString()}
-            >
-              {poll.options.map((option) => (
-                <div key={option.id} className="flex items-center space-x-3">
-                  <RadioGroupItem
-                    value={option.id.toString()}
-                    id={`option-${option.id}`}
-                  />
-                  <Label
-                    htmlFor={`option-${option.id}`}
-                    className="flex flex-1 items-center justify-between"
+
+      <div className="rounded-2xl border border-neutral-200 bg-white p-6">
+        <div>
+          <h2 className="mb-4 text-xl font-bold">{poll.question}</h2>
+
+          <div className="space-y-2">
+            <form action={action}>
+              <input type="hidden" name="pollId" value={poll.id} />
+              {poll.options.map((option) => {
+                const percentage = getPercentage(option.votes);
+                const isSelected = poll.userVote === option.id;
+
+                return (
+                  <button
+                    key={option.id}
+                    className="relative w-full text-left"
+                    disabled={isPending}
+                    value={option.id}
+                    name="selectedOption"
+                    type="submit"
                   >
-                    <span>{option.text}</span>
-                    <span className="text-muted-foreground text-sm">
-                      ({option.votes} votes)
-                    </span>
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
+                    <div className="relative z-10 flex items-center justify-between rounded-md p-3 transition-colors hover:bg-neutral-50">
+                      <span className="font-medium">{option.text}</span>
+                      <span>{percentage}%</span>
+                    </div>
+                    <div
+                      className={`absolute left-0 top-0 h-full rounded-md bg-neutral-100 transition-all ${
+                        isSelected ? "bg-blue-50" : ""
+                      }`}
+                      style={{
+                        width: `${percentage}%`,
+                      }}
+                    />
+                  </button>
+                );
+              })}
+            </form>
+          </div>
 
-            {state?.errors?.selectedOption && (
-              <p className="text-destructive mt-2 text-sm">
-                {state.errors.selectedOption[0]}
-              </p>
-            )}
+          <div className="mt-4 border-t border-neutral-100 pt-4 text-sm text-neutral-600">
+            {totalVotes.toLocaleString()} votes
+          </div>
+        </div>
+      </div>
 
-            <Button type="submit" className="mt-6 w-full" disabled={isPending}>
-              {isPending
-                ? "Submitting..."
-                : state?.message === "Vote submitted successfully."
-                  ? "Vote Recorded"
-                  : "Submit Vote"}
-            </Button>
+      {state?.errors?.selectedOption && (
+        <p className="text-destructive mt-2 text-sm">
+          {state.errors.selectedOption[0]}
+        </p>
+      )}
 
-            {state?.message &&
-              state.message !== "Vote submitted successfully." && (
-                <p className="text-destructive mt-2 text-center text-sm">
-                  {state.message}
-                </p>
-              )}
+      {state?.message && state.message !== "Vote submitted successfully." && (
+        <p className="text-destructive mt-2 text-center text-sm">
+          {state.message}
+        </p>
+      )}
 
-            {state?.message === "Vote submitted successfully." && (
-              <p className="mt-2 text-center text-sm text-green-600">
-                Your vote has been recorded!
-              </p>
-            )}
-          </CardContent>
-        </form>
-      </Card>
-    </>
+      {state?.message === "Vote submitted successfully." && (
+        <p className="mt-2 text-center text-sm text-green-600">
+          Your vote has been recorded!
+        </p>
+      )}
+    </div>
   );
 }

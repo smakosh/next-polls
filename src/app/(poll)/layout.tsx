@@ -63,7 +63,7 @@ export default async function Layout({
         <header className="flex h-14 items-center border-b px-4 md:gap-4">
           <Link
             className="flex items-center rounded-md bg-gray-100 p-2 lg:hidden"
-            href="#"
+            href="/"
           >
             <PackageIcon className="size-6" />
             <span className="sr-only">Home</span>
